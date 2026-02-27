@@ -10,7 +10,7 @@ import static org.springframework.data.web.config.EnableSpringDataWebSupport.Pag
 @EnableSpringDataWebSupport(pageSerializationMode = VIA_DTO)
 public class JpaSpecApp {
 
-    public static void main(String[] args) {
+    static void main(String[] args) {
         SpringApplication.run(JpaSpecApp.class, args);
     }
 

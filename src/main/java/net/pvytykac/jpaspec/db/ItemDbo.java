@@ -1,5 +1,6 @@
 package net.pvytykac.jpaspec.db;
 
+import com.fasterxml.jackson.annotation.JsonEnumDefaultValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -34,6 +35,9 @@ public class ItemDbo {
     Status status;
 
     public enum Status {
-        PENDING, ACTIVE, DISABLED;
+        PENDING, ACTIVE, DISABLED,
+
+        @JsonEnumDefaultValue
+        UNKNOWN
     }
 }

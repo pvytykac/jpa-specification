@@ -3,18 +3,45 @@ package net.pvytykac.jpaspec.queryfilter;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Predicate;
-import jakarta.validation.constraints.NotNull;
-import lombok.Data;
+import lombok.AllArgsConstructor;
+import lombok.Value;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import java.util.Optional;
 
-@Data
+@Value
+@AllArgsConstructor
+@NullMarked
 public class StringFilter implements Filter<String, String> {
 
+    @Nullable
     String value;
+    Operator operator;
 
-    @NotNull
-    Operator operator = Operator.EXACT_MATCH;
+    public static StringFilter any() {
+        return new StringFilter(null, Operator.STARTS_WITH);
+    }
+
+    public static StringFilter of(@Nullable String value, @Nullable Operator operator, Operator defaultOperator) {
+        return new StringFilter(value, operator != null ? operator : defaultOperator);
+    }
+
+    public static StringFilter startsWith(String value) {
+        return new StringFilter(value, Operator.STARTS_WITH);
+    }
+
+    public static StringFilter endsWith(String value) {
+        return new StringFilter(value, Operator.ENDS_WITH);
+    }
+
+    public static StringFilter contains(String value) {
+        return new StringFilter(value, Operator.CONTAINS);
+    }
+
+    public static StringFilter equalTo(String value) {
+        return new StringFilter(value, Operator.EXACT_MATCH);
+    }
 
     @Override
     public Optional<Predicate> toPredicate(Expression<String> expression, CriteriaBuilder cb) {

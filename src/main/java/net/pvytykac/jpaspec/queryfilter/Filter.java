@@ -10,8 +10,6 @@ public interface Filter<T, U> {
 
     T getValue();
 
-    void setValue(T value);
-
     Optional<Predicate> toPredicate(Expression<U> expression, CriteriaBuilder cb);
 
 }

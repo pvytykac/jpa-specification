@@ -2,8 +2,9 @@ package net.pvytykac.jpaspec;
 
 import net.pvytykac.jpaspec.api.ItemController;
 import net.pvytykac.jpaspec.api.ItemMapperImpl;
-import net.pvytykac.jpaspec.api.ItemsFilter;
+import net.pvytykac.jpaspec.db.ItemDbo.Status;
 import net.pvytykac.jpaspec.db.ItemRepository;
+import net.pvytykac.jpaspec.db.ItemsFilter;
 import net.pvytykac.jpaspec.queryfilter.EnumFilter;
 import net.pvytykac.jpaspec.queryfilter.StringFilter;
 import net.pvytykac.jpaspec.queryfilter.UuidFilter;
@@ -36,7 +37,7 @@ class ItemControllerTest {
     void getWithAllFilters(@Autowired WebTestClient client) {
         var filterCaptor = ArgumentCaptor.forClass(ItemsFilter.class);
         var pageableCaptor = ArgumentCaptor.forClass(Pageable.class);
-        var uuid = UUID.randomUUID().toString();
+        var uuid = UUID.randomUUID();
 
         when(repository.findAll(filterCaptor.capture(), pageableCaptor.capture()))
                 .thenReturn(new PageImpl<>(Collections.emptyList()));
@@ -45,7 +46,7 @@ class ItemControllerTest {
                 .uri(builder -> builder.path("/v1/items")
                         .queryParam("name", "Juice")
                         .queryParam("nameOperator", "STARTS_WITH")
-                        .queryParam("id", uuid)
+                        .queryParam("id", uuid.toString())
                         .queryParam("status", "ACTIVE", "PENDING")
                         .queryParam("page", 5)
                         .queryParam("size", 25)
@@ -67,7 +68,7 @@ class ItemControllerTest {
 
         assertThat(filterCaptor.getValue())
                 .extracting(ItemsFilter::getStatusFilter)
-                .returns(Set.of("ACTIVE", "PENDING"), EnumFilter::getValue);
+                .returns(Set.of(Status.ACTIVE, Status.PENDING), EnumFilter::getValue);
 
 
         assertThat(pageableCaptor.getValue()).isNotNull();
@@ -77,7 +78,7 @@ class ItemControllerTest {
 
         assertThat(pageableCaptor.getValue().getSort()).isNotNull();
         assertThat(pageableCaptor.getValue().getSort().getOrderFor("name"))
-                .returns(Sort.Direction.ASC, Sort.Order::getDirection);
+                .returns(Sort.Direction.ASC, order -> order != null ? order.getDirection() : null);
     }
 
 }

@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.pvytykac.jpaspec.db.ItemRepository;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
@@ -29,10 +30,12 @@ public class ItemController {
     private final ItemMapper mapper;
 
     @GetMapping
-    public Page<ItemGetDto> getItems(@Valid @NotNull ItemsFilter filter, Pageable pageable) {
-        log.info("Getting items for filter: {} and pageable: {}", filter, pageable);
+    public Page<ItemGetDto> getItems(
+            @ParameterObject @Valid @NotNull ItemsQueryParameters parameters,
+            @ParameterObject Pageable pageable) {
+        log.info("Getting items with parameters: {} and pageable: {}", parameters, pageable);
 
-        return repository.findAll(filter, pageable)
+        return repository.findAll(parameters.toFilter(), pageable)
                 .map(mapper::dboToResponseDto);
     }
 

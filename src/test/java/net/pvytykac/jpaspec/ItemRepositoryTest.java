@@ -1,9 +1,12 @@
 package net.pvytykac.jpaspec;
 
-import net.pvytykac.jpaspec.api.ItemsFilter;
 import net.pvytykac.jpaspec.db.ItemDbo;
+import net.pvytykac.jpaspec.db.ItemDbo.Status;
 import net.pvytykac.jpaspec.db.ItemRepository;
+import net.pvytykac.jpaspec.db.ItemsFilter;
+import net.pvytykac.jpaspec.queryfilter.EnumFilter;
 import net.pvytykac.jpaspec.queryfilter.StringFilter;
+import net.pvytykac.jpaspec.queryfilter.UuidFilter;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -14,7 +17,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.test.context.ContextConfiguration;
 
 import java.math.BigDecimal;
-import java.util.Set;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -65,37 +67,39 @@ class ItemRepositoryTest {
     @Test
     void findAll_IdFilter_DoesMatch() {
         var saved = repository.save(givenDbo());
+        var filter = ItemsFilter.builder().uuidFilter(UuidFilter.equalTo(saved.getId())).build();
 
-        assertThat(repository.findAll(new ItemsFilter().setId(saved.getId().toString()), Pageable.unpaged()))
+        assertThat(repository.findAll(filter, Pageable.unpaged()))
                 .hasSize(1);
     }
 
     @Test
     void findAll_IdFilter_DoesNotMatch() {
         repository.save(givenDbo());
+        var filter = ItemsFilter.builder().uuidFilter(UuidFilter.equalTo(UUID.randomUUID())).build();
 
-        assertThat(repository.findAll(new ItemsFilter().setId(UUID.randomUUID().toString()), Pageable.unpaged()))
+        assertThat(repository.findAll(filter, Pageable.unpaged()))
                 .isEmpty();
     }
 
     static ItemsFilter[] matchingItemsFilters() {
         return new ItemsFilter[]{
-                new ItemsFilter().setName("Juic").setNameOperator(StringFilter.Operator.STARTS_WITH),
-                new ItemsFilter().setName("uice").setNameOperator(StringFilter.Operator.ENDS_WITH),
-                new ItemsFilter().setName("uic").setNameOperator(StringFilter.Operator.CONTAINS),
-                new ItemsFilter().setName("Juice").setNameOperator(StringFilter.Operator.EXACT_MATCH),
-                new ItemsFilter().setStatus(Set.of("PENDING")),
-                new ItemsFilter().setStatus(Set.of("PENDING", "ACTIVE", "DISABLED")),
+                ItemsFilter.builder().nameFilter(StringFilter.startsWith("Juic")).build(),
+                ItemsFilter.builder().nameFilter(StringFilter.endsWith("uice")).build(),
+                ItemsFilter.builder().nameFilter(StringFilter.contains("uic")).build(),
+                ItemsFilter.builder().nameFilter(StringFilter.equalTo("Juice")).build(),
+                ItemsFilter.builder().statusFilter(EnumFilter.of(Status.PENDING)).build(),
+                ItemsFilter.builder().statusFilter(EnumFilter.of(Status.PENDING, Status.ACTIVE, Status.DISABLED)).build(),
         };
     }
 
     static ItemsFilter[] nonMatchingItemsFilters() {
         return new ItemsFilter[]{
-                new ItemsFilter().setName("uice").setNameOperator(StringFilter.Operator.STARTS_WITH),
-                new ItemsFilter().setName("Juic").setNameOperator(StringFilter.Operator.ENDS_WITH),
-                new ItemsFilter().setName("Juices").setNameOperator(StringFilter.Operator.CONTAINS),
-                new ItemsFilter().setName("uic").setNameOperator(StringFilter.Operator.EXACT_MATCH),
-                new ItemsFilter().setStatus(Set.of("ACTIVE", "DISABLED")),
+                ItemsFilter.builder().nameFilter(StringFilter.startsWith("uice")).build(),
+                ItemsFilter.builder().nameFilter(StringFilter.endsWith("Juic")).build(),
+                ItemsFilter.builder().nameFilter(StringFilter.contains("Juices")).build(),
+                ItemsFilter.builder().nameFilter(StringFilter.equalTo("uic")).build(),
+                ItemsFilter.builder().statusFilter(EnumFilter.of(Status.ACTIVE, Status.DISABLED)).build(),
         };
     }
 
@@ -103,7 +107,7 @@ class ItemRepositoryTest {
         return ItemDbo.builder()
                 .name("Juice")
                 .price(BigDecimal.valueOf(24.99D))
-                .status(ItemDbo.Status.PENDING)
+                .status(Status.PENDING)
                 .build();
     }
 }
