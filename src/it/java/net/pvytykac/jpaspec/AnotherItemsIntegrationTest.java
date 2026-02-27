@@ -3,9 +3,9 @@ package net.pvytykac.jpaspec;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
-import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
+import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webtestclient.autoconfigure.AutoConfigureWebTestClient;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -47,7 +47,6 @@ class AnotherItemsIntegrationTest {
                         .queryParam("nameOperator", "CONTAINS")
                         .queryParam("status", "PENDING", "ACTIVE", "DISABLED")
                         .build())
-                .accept(MediaType.APPLICATION_JSON)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
@@ -84,14 +83,12 @@ class AnotherItemsIntegrationTest {
         client.get()
                 .uri(builder -> builder.path("/v1/items/{itemId}")
                         .build(itemId))
-                .accept(MediaType.APPLICATION_JSON)
                 .exchange()
                 .expectStatus().isOk();
 
         client.delete()
                 .uri(builder -> builder.path("/v1/items/{itemId}")
                         .build(itemId))
-                .accept(MediaType.APPLICATION_JSON)
                 .exchange()
                 .expectStatus().isOk()
                 .expectBody()
@@ -102,7 +99,6 @@ class AnotherItemsIntegrationTest {
         client.get()
                 .uri(builder -> builder.path("/v1/items/{itemId}")
                         .build(itemId))
-                .accept(MediaType.APPLICATION_JSON)
                 .exchange()
                 .expectStatus().isNotFound();
     }
